@@ -202,8 +202,8 @@ def load_shop_items():
         except json.JSONDecodeError:
             return {}
     return {
-        "1": {"name": "💬 Discord add", "price": 500},
-        "2": {"name": "🎮 Brawl Stars add", "price": 1000}
+        "1": {"name": "ðŸ’¬ Discord add", "price": 500},
+        "2": {"name": "ðŸŽ® Brawl Stars add", "price": 1000}
     }
 
 def save_shop_items(items_dict):
@@ -260,7 +260,7 @@ async def backup_to_discord():
     try:
         channel = bot.get_channel(BACKUP_CHANNEL_ID)
         if not channel:
-            print(f"❌ Backup channel not found (ID: {BACKUP_CHANNEL_ID})")
+            print(f"âŒ Backup channel not found (ID: {BACKUP_CHANNEL_ID})")
             return
         
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -268,59 +268,45 @@ async def backup_to_discord():
         
         for json_file in ALL_JSON_FILES:
             if Path(json_file).exists():
-                files_to_send.append(json_file)
+                files_to_send.append(discord.File(json_file))
         
         if files_to_send:
-            total_files = len(files_to_send)
-            batch_size = 10
-            
-            for i in range(0, total_files, batch_size):
-                batch = files_to_send[i:i + batch_size]
-                discord_files = [discord.File(f) for f in batch]
-                
-                if i == 0:
-                    await channel.send(
-                        f"🔄 **Automatic Backup** - {timestamp}\n"
-                        f"📦 {total_files} files saved (batch {i//batch_size + 1}/{(total_files + batch_size - 1)//batch_size})",
-                        files=discord_files
-                    )
-                else:
-                    await channel.send(
-                        f"📦 Batch {i//batch_size + 1}/{(total_files + batch_size - 1)//batch_size}",
-                        files=discord_files
-                    )
-            
-            print(f"✅ Backup completed: {total_files} files sent to Discord in {(total_files + batch_size - 1)//batch_size} batch(es)")
+            await channel.send(
+                f"ðŸ”„ **Automatic Backup** - {timestamp}\n"
+                f"ðŸ“¦ {len(files_to_send)} files saved",
+                files=files_to_send
+            )
+            print(f"âœ… Backup completed: {len(files_to_send)} files sent to Discord")
         else:
-            print("⚠️ No JSON files to backup")
+            print("âš ï¸ No JSON files to backup")
     except Exception as e:
-        print(f"❌ Backup error: {e}")
+        print(f"âŒ Backup error: {e}")
 
 async def restore_from_discord():
     try:
         channel = bot.get_channel(BACKUP_CHANNEL_ID)
         if not channel:
-            print(f"❌ Backup channel not found (ID: {BACKUP_CHANNEL_ID})")
+            print(f"âŒ Backup channel not found (ID: {BACKUP_CHANNEL_ID})")
             return
         
-        print("🔍 Looking for backups in Discord...")
+        print("ðŸ” Looking for backups in Discord...")
         
         async for message in channel.history(limit=50):
             if message.author == bot.user and message.attachments:
-                print(f"📥 Found backup from {message.created_at}")
+                print(f"ðŸ“¥ Found backup from {message.created_at}")
                 
                 for attachment in message.attachments:
                     if attachment.filename.endswith('.json'):
                         file_path = Path(attachment.filename)
                         await attachment.save(file_path)
-                        print(f"  ✅ Restored: {attachment.filename}")
+                        print(f"  âœ… Restored: {attachment.filename}")
                 
-                print("🎉 Backup restoration completed!")
+                print("ðŸŽ‰ Backup restoration completed!")
                 return
         
-        print("ℹ️ No backup found in Discord, using existing files")
+        print("â„¹ï¸ No backup found in Discord, using existing files")
     except Exception as e:
-        print(f"❌ Restore error: {e}")
+        print(f"âŒ Restore error: {e}")
 
 async def disable_xp_reaction_timer():
     global xp_reaction_enabled, xp_reaction_timer
@@ -329,14 +315,14 @@ async def disable_xp_reaction_timer():
     xp_reaction_timer["expires_at"] = None
     save_xp_reaction_enabled(False)
     save_xp_reaction_timer(xp_reaction_timer)
-    print("⏰ XP Reaction timer expired - disabled")
+    print("â° XP Reaction timer expired - disabled")
 
 async def disable_event_timer(event_name):
     global events_state
     events_state[event_name]["enabled"] = False
     events_state[event_name]["expires_at"] = None
     save_events_state(events_state)
-    print(f"⏰ {event_name.capitalize()} timer expired - disabled")
+    print(f"â° {event_name.capitalize()} timer expired - disabled")
 
 async def schedule_xp_reaction_disable(minutes):
     global xp_reaction_timer_task
@@ -361,7 +347,7 @@ async def restore_timers():
             remaining = (expires - now).total_seconds() / 60
             xp_reaction_enabled = True
             xp_reaction_timer_task = asyncio.create_task(schedule_xp_reaction_disable(remaining))
-            print(f"🔄 Restored XP Reaction timer: {remaining:.1f} minutes remaining")
+            print(f"ðŸ”„ Restored XP Reaction timer: {remaining:.1f} minutes remaining")
         else:
             await disable_xp_reaction_timer()
     
@@ -377,7 +363,7 @@ async def restore_timers():
                     event_timer_task = task
                 else:
                     gift_timer_task = task
-                print(f"🔄 Restored {event_name} timer: {remaining:.1f} minutes remaining")
+                print(f"ðŸ”„ Restored {event_name} timer: {remaining:.1f} minutes remaining")
             else:
                 await disable_event_timer(event_name)
 
@@ -461,7 +447,7 @@ async def check_missing_members():
             
             if inviter_id in xp_data:
                 xp_data[inviter_id] = max(0, xp_data.get(inviter_id, 0) - xp_config["xp_invitation"])
-                print(f"🔻 Detected offline leave: Member ID {member_id} left. Removed {xp_config['xp_invitation']} XP from inviter (ID: {inviter_id}). New XP: {xp_data[inviter_id]}")
+                print(f"ðŸ”» Detected offline leave: Member ID {member_id} left. Removed {xp_config['xp_invitation']} XP from inviter (ID: {inviter_id}). New XP: {xp_data[inviter_id]}")
     
     for member_id in members_to_remove:
         del inviter_tracker[member_id]
@@ -469,7 +455,7 @@ async def check_missing_members():
     if members_to_remove:
         save_xp(xp_data)
         save_inviter_tracker(inviter_tracker)
-        print(f"✅ Processed {len(members_to_remove)} offline departures")
+        print(f"âœ… Processed {len(members_to_remove)} offline departures")
 
 @bot.event
 async def on_ready():
@@ -479,7 +465,7 @@ async def on_ready():
     global shop_items, events_state, xp_reaction_timer
     
     bot_start_time = datetime.now()
-    print(f"✅ Logged in as {bot.user}")
+    print(f"âœ… Logged in as {bot.user}")
     
     await restore_from_discord()
     
@@ -497,20 +483,20 @@ async def on_ready():
     shop_items = load_shop_items()
     events_state = load_events_state()
     xp_reaction_timer = load_xp_reaction_timer()
-    print("📂 All data reloaded from backup")
+    print("ðŸ“‚ All data reloaded from backup")
     
     await restore_timers()
     
     for guild in bot.guilds:
         await load_invites(guild)
-    print(f"📊 Invites loaded for {len(bot.guilds)} server(s)")
+    print(f"ðŸ“Š Invites loaded for {len(bot.guilds)} server(s)")
     
     await check_missing_members()
-    print(f"✅ Checked for members who left while bot was offline")
+    print(f"âœ… Checked for members who left while bot was offline")
     
     if not auto_backup.is_running():
         auto_backup.start()
-        print(f"🔄 Automatic backup started (every {BACKUP_INTERVAL_MINUTES} minutes)")
+        print(f"ðŸ”„ Automatic backup started (every {BACKUP_INTERVAL_MINUTES} minutes)")
 
 @bot.event
 async def on_member_join(member):
@@ -535,7 +521,7 @@ async def on_member_join(member):
                         notification_channel = bot.get_channel(XP_NOTIFICATION_CHANNEL)
                         if notification_channel and hasattr(notification_channel, 'send'):
                             await notification_channel.send(
-                                f"🎉 Welcome {member.mention}! {inviter.mention} received {xp_config['xp_invitation']} XP for inviting!"
+                                f"ðŸŽ‰ Welcome {member.mention}! {inviter.mention} received {xp_config['xp_invitation']} XP for inviting!"
                             )
                     except Exception as e:
                         print(f"Error sending invite notification: {e}")
@@ -555,41 +541,10 @@ async def on_member_remove(member):
         if inviter_id in xp_data:
             xp_data[inviter_id] = max(0, xp_data.get(inviter_id, 0) - xp_config["xp_invitation"])
             save_xp(xp_data)
-            print(f"🔻 Member {member.name} left. Removed {xp_config['xp_invitation']} XP from inviter (ID: {inviter_id}). New XP: {xp_data[inviter_id]}")
+            print(f"ðŸ”» Member {member.name} left. Removed {xp_config['xp_invitation']} XP from inviter (ID: {inviter_id}). New XP: {xp_data[inviter_id]}")
         
         del inviter_tracker[member.id]
         save_inviter_tracker(inviter_tracker)
-
-@bot.event
-async def on_member_update(before, after):
-    if after.bot:
-        return
-    
-    if before.premium_since is None and after.premium_since is not None:
-        user_id = after.id
-        
-        if user_id in boosters_data:
-            print(f"⚠️ {after.name} already received boost XP (skipping)")
-            return
-        
-        boost_xp = xp_config.get("xp_boost", 500)
-        xp_data[user_id] = xp_data.get(user_id, 0) + boost_xp
-        save_xp(xp_data)
-        
-        boosters_data[user_id] = after.premium_since.isoformat()
-        save_boosters(boosters_data)
-        
-        print(f"🚀 {after.name} boosted the server! Received {boost_xp} XP. Total: {xp_data[user_id]}")
-        
-        try:
-            boost_channel = bot.get_channel(BOOST_NOTIFICATION_CHANNEL)
-            if boost_channel and hasattr(boost_channel, 'send'):
-                await boost_channel.send(
-                    f"🚀 **{after.mention} just boosted the server!** 🎉\n"
-                    f"💎 Received **{boost_xp} XP** as a thank you! Total XP: **{xp_data[user_id]}**"
-                )
-        except Exception as e:
-            print(f"❌ Error sending boost notification: {e}")
 
 @bot.event
 async def on_message(message):
@@ -625,7 +580,7 @@ async def on_message(message):
                     notification_channel = bot.get_channel(XP_NOTIFICATION_CHANNEL)
                     if notification_channel and hasattr(notification_channel, 'send'):
                         await notification_channel.send(
-                            f"🎉 {message.author.mention} has successfully collected {xp_config['max_xp_per_hour']} XP this hour! Total XP: {xp_data[user_id]}"
+                            f"ðŸŽ‰ {message.author.mention} has successfully collected {xp_config['max_xp_per_hour']} XP this hour! Total XP: {xp_data[user_id]}"
                         )
                 except Exception as e:
                     print(f"Error sending XP notification: {e}")
@@ -651,42 +606,42 @@ async def on_raw_reaction_add(payload):
     if payload.emoji.id:
         emoji_str = f"<:{payload.emoji.name}:{payload.emoji.id}>"
         emoji_match = emoji_str == EMOJI_DON
-        print(f"🔍 Custom emoji detected: {emoji_str} | Match: {emoji_match}")
+        print(f"ðŸ” Custom emoji detected: {emoji_str} | Match: {emoji_match}")
     else:
         emoji_str = str(payload.emoji.name)
         emoji_match = emoji_str == EMOJI_DON
-        print(f"🔍 Standard emoji detected: {emoji_str} | Match: {emoji_match}")
+        print(f"ðŸ” Standard emoji detected: {emoji_str} | Match: {emoji_match}")
     
-    print(f"👤 User: {user.name} (ID: {user.id}) | Is chef/XP manager: {is_chef_or_xp_manager(user, member)}")
+    print(f"ðŸ‘¤ User: {user.name} (ID: {user.id}) | Is chef/XP manager: {is_chef_or_xp_manager(user, member)}")
     
     if is_chef_or_xp_manager(user, member) and emoji_match:
         try:
             channel = bot.get_channel(payload.channel_id)
             if not channel:
-                print("❌ Channel not found")
+                print("âŒ Channel not found")
                 return
             
             if not xp_reaction_enabled:
-                print("❌ XP reactions are currently disabled")
-                await channel.send(f"⚠️ XP reactions are currently disabled!")
+                print("âŒ XP reactions are currently disabled")
+                await channel.send(f"âš ï¸ XP reactions are currently disabled!")
                 return
             
             if xp_reaction_channels and payload.channel_id not in xp_reaction_channels:
-                print(f"❌ Channel {payload.channel_id} is not in the XP reaction whitelist")
-                await channel.send(f"⚠️ XP reactions are not allowed in this channel!")
+                print(f"âŒ Channel {payload.channel_id} is not in the XP reaction whitelist")
+                await channel.send(f"âš ï¸ XP reactions are not allowed in this channel!")
                 return
             
             message = await channel.fetch_message(payload.message_id)
             target = message.author
             message_id = message.id
             
-            print(f"🎯 Target: {target.name} (ID: {target.id}) | Is bot: {target.bot}")
+            print(f"ðŸŽ¯ Target: {target.name} (ID: {target.id}) | Is bot: {target.bot}")
             if target.bot:
-                print("❌ Target is a bot, skipping XP reward")
+                print("âŒ Target is a bot, skipping XP reward")
                 return
             
             if message_id in xp_reactions:
-                print(f"⚠️ Message {message_id} already received XP reward, skipping")
+                print(f"âš ï¸ Message {message_id} already received XP reward, skipping")
                 return
             
             current_time = datetime.now()
@@ -699,9 +654,9 @@ async def on_raw_reaction_add(payload):
                 if time_since_last < timedelta(hours=cooldown_hours):
                     remaining_time = timedelta(hours=cooldown_hours) - time_since_last
                     minutes = int(remaining_time.total_seconds() // 60)
-                    print(f"⏰ {target.name} is on cooldown. {minutes} minutes remaining")
+                    print(f"â° {target.name} is on cooldown. {minutes} minutes remaining")
                     await channel.send(
-                        f"⏰ {target.mention} must wait {minutes} more minutes before receiving XP via reaction!"
+                        f"â° {target.mention} must wait {minutes} more minutes before receiving XP via reaction!"
                     )
                     return
             
@@ -716,15 +671,15 @@ async def on_raw_reaction_add(payload):
             save_xp(xp_data)
             save_xp_reactions(xp_reactions)
             total_xp = xp_data[target.id]
-            print(f"✅ Gave {xp_config['emoji_xp_amount']} XP to {target.name}. New total: {total_xp}")
+            print(f"âœ… Gave {xp_config['emoji_xp_amount']} XP to {target.name}. New total: {total_xp}")
             
-            await message.add_reaction("✅")
+            await message.add_reaction("âœ…")
             
             await channel.send(
-                f"💸 {target.mention} received {xp_config['emoji_xp_amount']} XP from **404ERROR**! Total XP: {total_xp}"
+                f"ðŸ’¸ {target.mention} received {xp_config['emoji_xp_amount']} XP from **404ERROR**! Total XP: {total_xp}"
             )
         except Exception as e:
-            print(f"❌ Error in on_raw_reaction_add: {e}")
+            print(f"âŒ Error in on_raw_reaction_add: {e}")
 
 @bot.event
 async def on_raw_reaction_remove(payload):
@@ -754,7 +709,7 @@ async def on_raw_reaction_remove(payload):
             message_id = payload.message_id
             
             if message_id not in xp_reactions:
-                print(f"⚠️ Message {message_id} has no XP reward to remove")
+                print(f"âš ï¸ Message {message_id} has no XP reward to remove")
                 return
             
             reaction_data = xp_reactions[message_id]
@@ -768,7 +723,7 @@ async def on_raw_reaction_remove(payload):
             
             target = await bot.fetch_user(target_id)
             total_xp = xp_data[target_id]
-            print(f"🔻 Removed {amount} XP from {target.name}. New total: {total_xp}")
+            print(f"ðŸ”» Removed {amount} XP from {target.name}. New total: {total_xp}")
             
             if target_id in emoji_xp_cooldowns:
                 del emoji_xp_cooldowns[target_id]
@@ -777,127 +732,112 @@ async def on_raw_reaction_remove(payload):
             if channel:
                 try:
                     message = await channel.fetch_message(payload.message_id)
-                    await message.remove_reaction("✅", bot.user)
+                    await message.remove_reaction("âœ…", bot.user)
                 except:
                     pass
                 
                 await channel.send(
-                    f"⚠️ {target.mention} lost {amount} XP (reaction removed by **404ERROR**). Total XP: {total_xp}"
+                    f"âš ï¸ {target.mention} lost {amount} XP (reaction removed by **404ERROR**). Total XP: {total_xp}"
                 )
         except Exception as e:
-            print(f"❌ Error in on_raw_reaction_remove: {e}")
+            print(f"âŒ Error in on_raw_reaction_remove: {e}")
 
 @bot.command()
 async def xp(ctx, member: Optional[discord.Member] = None):
     if not is_command_enabled('xp'):
-        await ctx.send("❌ This command is currently disabled!")
+        await ctx.send("âŒ This command is currently disabled!")
         return
     
     author_member = ctx.guild.get_member(ctx.author.id) if ctx.guild else None
     if member:
         if not is_chef_or_xp_manager(ctx.author, author_member):
-            await ctx.send("❌ Only chef and XP managers can check others' XP!")
+            await ctx.send("âŒ Only chef and XP managers can check others' XP!")
             return
         amount = xp_data.get(member.id, 0)
-        await ctx.send(f"💰 {member.mention} has {amount} XP!")
+        await ctx.send(f"ðŸ’° {member.mention} has {amount} XP!")
     else:
         amount = xp_data.get(ctx.author.id, 0)
-        await ctx.send(f"💰 You have {amount} XP!")
+        await ctx.send(f"ðŸ’° You have {amount} XP!")
 
 @bot.command()
 async def addxp(ctx, member: discord.Member, amount: int):
     if not is_command_enabled('addxp'):
-        await ctx.send("❌ This command is currently disabled!")
+        await ctx.send("âŒ This command is currently disabled!")
         return
     
     if ctx.author.id != CHEF_ID:
-        await ctx.send("❌ Only the chef can modify XP!")
+        await ctx.send("âŒ Only the chef can modify XP!")
         return
     if amount == 0:
-        await ctx.send("❌ Amount cannot be 0!")
+        await ctx.send("âŒ Amount cannot be 0!")
         return
     xp_data[member.id] = xp_data.get(member.id, 0) + amount
     save_xp(xp_data)
     if amount > 0:
-        await ctx.send(f"✅ {member.mention} received {amount} XP from 404ERROR!")
+        await ctx.send(f"âœ… {member.mention} received {amount} XP from 404ERROR!")
     else:
-        await ctx.send(f"✅ {member.mention} lost {abs(amount)} XP (removed by 404ERROR)!")
+        await ctx.send(f"âœ… {member.mention} lost {abs(amount)} XP (removed by 404ERROR)!")
 
 @bot.command()
 async def resetxp(ctx):
     if ctx.author.id != CHEF_ID:
-        await ctx.send("❌ Only the chef can reset all XP!")
+        await ctx.send("âŒ Only the chef can reset all XP!")
         return
     confirm_msg = await ctx.send(
-        "⚠️ **WARNING!** You are about to **RESET ALL XP** for everyone!\n"
+        "âš ï¸ **WARNING!** You are about to **RESET ALL XP** for everyone!\n"
         "This action is **IRREVERSIBLE**!\n"
-        "React with ✅ to confirm or ❌ to cancel. You have 30 seconds."
+        "React with âœ… to confirm or âŒ to cancel. You have 30 seconds."
     )
-    await confirm_msg.add_reaction("✅")
-    await confirm_msg.add_reaction("❌")
+    await confirm_msg.add_reaction("âœ…")
+    await confirm_msg.add_reaction("âŒ")
     def check(reaction, user):
-        return user.id == CHEF_ID and str(reaction.emoji) in ["✅", "❌"] and reaction.message.id == confirm_msg.id
+        return user.id == CHEF_ID and str(reaction.emoji) in ["âœ…", "âŒ"] and reaction.message.id == confirm_msg.id
     try:
         reaction, user = await bot.wait_for('reaction_add', timeout=30.0, check=check)
-        if str(reaction.emoji) == "✅":
+        if str(reaction.emoji) == "âœ…":
             xp_data.clear()
             save_xp(xp_data)
-            await ctx.send("🔄 All XP have been reset! Everyone starts from 0.")
+            await ctx.send("ðŸ”„ All XP have been reset! Everyone starts from 0.")
         else:
-            await ctx.send("❌ Reset cancelled. XP preserved.")
+            await ctx.send("âŒ Reset cancelled. XP preserved.")
     except Exception:
-        await ctx.send("⏱️ Time expired. Reset cancelled.")
-
-@bot.command(aliases=['savebackup', 'save'])
-async def backup(ctx):
-    if ctx.author.id != CHEF_ID:
-        await ctx.send("❌ Only the chef can trigger manual backups!")
-        return
-    
-    await ctx.send("💾 Starting manual backup to Discord...")
-    
-    try:
-        await backup_to_discord()
-        await ctx.send("✅ **Manual backup completed!** All data has been saved to Discord.\n🔄 You can safely restart the bot now.")
-    except Exception as e:
-        await ctx.send(f"❌ Backup failed: {e}\nPlease check the console logs.")
-        print(f"❌ Manual backup error: {e}")
+        await ctx.send("â±ï¸ Time expired. Reset cancelled.")
 
 @bot.command()
 async def shop(ctx):
     if not is_command_enabled('shop'):
-        await ctx.send("❌ This command is currently disabled!")
+        await ctx.send("âŒ This command is currently disabled!")
         return
     
     if not shop_items:
-        await ctx.send("🛒 **404ERROR's Shop**\n\n⚠️ The shop is empty! The chef can add items with `!addshopitem`")
+        await ctx.send("ðŸ›’ **404ERROR's Shop**\n\nâš ï¸ The shop is empty! The chef can add items with `!addshopitem`")
         return
     
-    shop_text = "🛒 **404ERROR's Shop**\n\n"
+    shop_text = "ðŸ›’ **404ERROR's Shop**\n\n"
     for item_id in sorted(shop_items.keys(), key=lambda x: int(x)):
         item = shop_items[item_id]
-        shop_text += f"{item_id}️⃣ **{item['name']}** - {item['price']} XP (use !buy {item_id})\n"
+        shop_text += f"{item_id}ï¸âƒ£ **{item['name']}** - {item['price']} XP (use !buy {item_id})\n"
     
     await ctx.send(shop_text)
 
 @bot.command()
 async def buy(ctx, item: str):
     if not is_command_enabled('buy'):
-        await ctx.send("❌ This command is currently disabled!")
+        await ctx.send("âŒ This command is currently disabled!")
         return
     
     user_id = ctx.author.id
     user_xp = xp_data.get(user_id, 0)
     
     if item not in shop_items:
-        await ctx.send("❌ Invalid item number! Use `!shop` to see items.")
+        await ctx.send("âŒ Invalid item number! Use `!shop` to see items.")
         return
     
     cost = shop_items[item]["price"]
     name = shop_items[item]["name"]
     
     if user_xp < cost:
-        await ctx.send(f"❌ You don't have enough XP to buy **{name}**!")
+        await ctx.send(f"âŒ You don't have enough XP to buy **{name}**!")
         return
     
     xp_data[user_id] -= cost
@@ -908,94 +848,59 @@ async def buy(ctx, item: str):
     inventory_data[user_id].append(name)
     save_inventory(inventory_data)
     
-    await ctx.send(f"✅ {ctx.author.mention} successfully bought **{name}** for {cost} XP! Remaining XP: {xp_data[user_id]}")
+    await ctx.send(f"âœ… {ctx.author.mention} successfully bought **{name}** for {cost} XP! Remaining XP: {xp_data[user_id]}")
 
 @bot.command()
 async def addshopitem(ctx, item_id: str, price: int, *name_parts):
     if ctx.author.id != CHEF_ID:
-        await ctx.send("❌ Only the chef can add shop items!")
+        await ctx.send("âŒ Only the chef can add shop items!")
         return
     
     if price <= 0:
-        await ctx.send("❌ Price must be a positive number!")
+        await ctx.send("âŒ Price must be a positive number!")
         return
     
     if not name_parts:
-        await ctx.send("❌ Please provide an item name!\n**Usage:** `!addshopitem <item_number> <price> <emoji+name>`\n**Example:** `!addshopitem 3 2000 💀 Death Item`")
+        await ctx.send("âŒ Please provide an item name!\n**Usage:** `!addshopitem <item_number> <price> <emoji+name>`\n**Example:** `!addshopitem 3 2000 ðŸ’€ Death Item`")
         return
     
     item_name = " ".join(name_parts)
     
     global shop_items
     if item_id in shop_items:
-        await ctx.send(f"⚠️ Item #{item_id} already exists: **{shop_items[item_id]['name']}** ({shop_items[item_id]['price']} XP)\nThis will overwrite it. React with ✅ to confirm or ❌ to cancel.")
+        await ctx.send(f"âš ï¸ Item #{item_id} already exists: **{shop_items[item_id]['name']}** ({shop_items[item_id]['price']} XP)\nThis will overwrite it. React with âœ… to confirm or âŒ to cancel.")
         
         confirm_msg = await ctx.send("Waiting for confirmation...")
-        await confirm_msg.add_reaction("✅")
-        await confirm_msg.add_reaction("❌")
+        await confirm_msg.add_reaction("âœ…")
+        await confirm_msg.add_reaction("âŒ")
         
         def check(reaction, user):
-            return user.id == CHEF_ID and str(reaction.emoji) in ["✅", "❌"] and reaction.message.id == confirm_msg.id
+            return user.id == CHEF_ID and str(reaction.emoji) in ["âœ…", "âŒ"] and reaction.message.id == confirm_msg.id
         
         try:
             reaction, user = await bot.wait_for('reaction_add', timeout=30.0, check=check)
-            if str(reaction.emoji) != "✅":
-                await ctx.send("❌ Cancelled. Item not modified.")
+            if str(reaction.emoji) != "âœ…":
+                await ctx.send("âŒ Cancelled. Item not modified.")
                 return
         except:
-            await ctx.send("⏱️ Time expired. Cancelled.")
+            await ctx.send("â±ï¸ Time expired. Cancelled.")
             return
     
     shop_items[item_id] = {"name": item_name, "price": price}
     save_shop_items(shop_items)
-    await ctx.send(f"✅ Successfully added item #{item_id}: **{item_name}** for {price} XP!\nUsers can buy it with `!buy {item_id}`")
-
-@bot.command()
-async def removeshopitem(ctx, item_id: str):
-    if ctx.author.id != CHEF_ID:
-        await ctx.send("❌ Only the chef can remove shop items!")
-        return
-    
-    global shop_items
-    if item_id not in shop_items:
-        await ctx.send(f"❌ Item #{item_id} doesn't exist in the shop! Use `!shop` to see available items.")
-        return
-    
-    item_name = shop_items[item_id]['name']
-    item_price = shop_items[item_id]['price']
-    
-    confirm_msg = await ctx.send(
-        f"⚠️ You are about to **REMOVE** item #{item_id}: **{item_name}** ({item_price} XP)\n"
-        f"React with ✅ to confirm or ❌ to cancel. You have 30 seconds."
-    )
-    await confirm_msg.add_reaction("✅")
-    await confirm_msg.add_reaction("❌")
-    
-    def check(reaction, user):
-        return user.id == CHEF_ID and str(reaction.emoji) in ["✅", "❌"] and reaction.message.id == confirm_msg.id
-    
-    try:
-        reaction, user = await bot.wait_for('reaction_add', timeout=30.0, check=check)
-        if str(reaction.emoji) == "✅":
-            del shop_items[item_id]
-            save_shop_items(shop_items)
-            await ctx.send(f"🗑️ Successfully removed item #{item_id}: **{item_name}** from the shop!")
-        else:
-            await ctx.send("❌ Cancelled. Item not removed.")
-    except:
-        await ctx.send("⏱️ Time expired. Cancelled.")
+    await ctx.send(f"âœ… Successfully added item #{item_id}: **{item_name}** for {price} XP!\nUsers can buy it with `!buy {item_id}`")
 
 @bot.command()
 async def event(ctx, action: str = None):
     global events_state, event_timer_task, event_cooldowns
     
     if action and ctx.author.id != CHEF_ID:
-        await ctx.send("❌ Only the chef can activate/deactivate events!")
+        await ctx.send("âŒ Only the chef can activate/deactivate events!")
         return
     
     if action is None:
         if not events_state["event"]["enabled"]:
-            await ctx.send("❌ The event is not currently active!")
+            await ctx.send("âŒ The event is not currently active!")
             return
         
         user_id = ctx.author.id
@@ -1007,7 +912,7 @@ async def event(ctx, action: str = None):
                 remaining = timedelta(hours=cooldown_hours) - time_since
                 hours = int(remaining.total_seconds() // 3600)
                 minutes = int((remaining.total_seconds() % 3600) // 60)
-                await ctx.send(f"⏰ You already claimed the event! Wait {hours}h {minutes}m before claiming again.")
+                await ctx.send(f"â° You already claimed the event! Wait {hours}h {minutes}m before claiming again.")
                 return
         
         xp_reward = events_state["event"]["xp_reward"]
@@ -1015,7 +920,7 @@ async def event(ctx, action: str = None):
         save_xp(xp_data)
         event_cooldowns[user_id] = datetime.now().isoformat()
         
-        await ctx.send(f"🎉 {ctx.author.mention} claimed the event and received {xp_reward} XP! Total XP: {xp_data[user_id]}")
+        await ctx.send(f"ðŸŽ‰ {ctx.author.mention} claimed the event and received {xp_reward} XP! Total XP: {xp_data[user_id]}")
         return
     
     if action.lower() == 'enable':
@@ -1024,40 +929,40 @@ async def event(ctx, action: str = None):
         if event_timer_task and not event_timer_task.done():
             event_timer_task.cancel()
         save_events_state(events_state)
-        await ctx.send(f"✅ Event **enabled** permanently! Users can claim {events_state['event']['xp_reward']} XP with `!event`")
+        await ctx.send(f"âœ… Event **enabled** permanently! Users can claim {events_state['event']['xp_reward']} XP with `!event`")
     elif action.lower() == 'disable':
         events_state["event"]["enabled"] = False
         events_state["event"]["expires_at"] = None
         if event_timer_task and not event_timer_task.done():
             event_timer_task.cancel()
         save_events_state(events_state)
-        await ctx.send("❌ Event **disabled**!")
+        await ctx.send("âŒ Event **disabled**!")
     else:
         try:
             minutes = int(action)
             if minutes <= 0:
-                await ctx.send("❌ Minutes must be a positive number!")
+                await ctx.send("âŒ Minutes must be a positive number!")
                 return
             events_state["event"]["enabled"] = True
             expires_at = datetime.now() + timedelta(minutes=minutes)
             events_state["event"]["expires_at"] = expires_at.isoformat()
             save_events_state(events_state)
             event_timer_task = asyncio.create_task(schedule_event_disable("event", minutes))
-            await ctx.send(f"✅ Event **enabled for {minutes} minutes**! Users can claim {events_state['event']['xp_reward']} XP with `!event`. Auto-disables at {expires_at.strftime('%H:%M:%S')}.")
+            await ctx.send(f"âœ… Event **enabled for {minutes} minutes**! Users can claim {events_state['event']['xp_reward']} XP with `!event`. Auto-disables at {expires_at.strftime('%H:%M:%S')}.")
         except ValueError:
-            await ctx.send("❌ Invalid action! Use `enable`, `disable`, or a number of minutes (e.g., `!event 5`).")
+            await ctx.send("âŒ Invalid action! Use `enable`, `disable`, or a number of minutes (e.g., `!event 5`).")
 
 @bot.command()
 async def gift(ctx, action: str = None):
     global events_state, gift_timer_task, gift_cooldowns
     
     if action and ctx.author.id != CHEF_ID:
-        await ctx.send("❌ Only the chef can activate/deactivate gifts!")
+        await ctx.send("âŒ Only the chef can activate/deactivate gifts!")
         return
     
     if action is None:
         if not events_state["gift"]["enabled"]:
-            await ctx.send("❌ Gifts are not currently available!")
+            await ctx.send("âŒ Gifts are not currently available!")
             return
         
         user_id = ctx.author.id
@@ -1069,7 +974,7 @@ async def gift(ctx, action: str = None):
                 remaining = timedelta(hours=cooldown_hours) - time_since
                 hours = int(remaining.total_seconds() // 3600)
                 minutes = int((remaining.total_seconds() % 3600) // 60)
-                await ctx.send(f"⏰ You already claimed a gift! Wait {hours}h {minutes}m before claiming again.")
+                await ctx.send(f"â° You already claimed a gift! Wait {hours}h {minutes}m before claiming again.")
                 return
         
         xp_reward = events_state["gift"]["xp_reward"]
@@ -1077,7 +982,7 @@ async def gift(ctx, action: str = None):
         save_xp(xp_data)
         gift_cooldowns[user_id] = datetime.now().isoformat()
         
-        await ctx.send(f"🎁 {ctx.author.mention} claimed a gift and received {xp_reward} XP! Total XP: {xp_data[user_id]}")
+        await ctx.send(f"ðŸŽ {ctx.author.mention} claimed a gift and received {xp_reward} XP! Total XP: {xp_data[user_id]}")
         return
     
     if action.lower() == 'enable':
@@ -1086,86 +991,52 @@ async def gift(ctx, action: str = None):
         if gift_timer_task and not gift_timer_task.done():
             gift_timer_task.cancel()
         save_events_state(events_state)
-        await ctx.send(f"✅ Gifts **enabled** permanently! Users can claim {events_state['gift']['xp_reward']} XP with `!gift`")
+        await ctx.send(f"âœ… Gifts **enabled** permanently! Users can claim {events_state['gift']['xp_reward']} XP with `!gift`")
     elif action.lower() == 'disable':
         events_state["gift"]["enabled"] = False
         events_state["gift"]["expires_at"] = None
         if gift_timer_task and not gift_timer_task.done():
             gift_timer_task.cancel()
         save_events_state(events_state)
-        await ctx.send("❌ Gifts **disabled**!")
+        await ctx.send("âŒ Gifts **disabled**!")
     else:
         try:
             minutes = int(action)
             if minutes <= 0:
-                await ctx.send("❌ Minutes must be a positive number!")
+                await ctx.send("âŒ Minutes must be a positive number!")
                 return
             events_state["gift"]["enabled"] = True
             expires_at = datetime.now() + timedelta(minutes=minutes)
             events_state["gift"]["expires_at"] = expires_at.isoformat()
             save_events_state(events_state)
             gift_timer_task = asyncio.create_task(schedule_event_disable("gift", minutes))
-            await ctx.send(f"✅ Gifts **enabled for {minutes} minutes**! Users can claim {events_state['gift']['xp_reward']} XP with `!gift`. Auto-disables at {expires_at.strftime('%H:%M:%S')}.")
+            await ctx.send(f"âœ… Gifts **enabled for {minutes} minutes**! Users can claim {events_state['gift']['xp_reward']} XP with `!gift`. Auto-disables at {expires_at.strftime('%H:%M:%S')}.")
         except ValueError:
-            await ctx.send("❌ Invalid action! Use `enable`, `disable`, or a number of minutes (e.g., `!gift 5`).")
+            await ctx.send("âŒ Invalid action! Use `enable`, `disable`, or a number of minutes (e.g., `!gift 5`).")
 
 @bot.command()
 async def topxp(ctx):
     if not is_command_enabled('topxp'):
-        await ctx.send("❌ This command is currently disabled!")
+        await ctx.send("âŒ This command is currently disabled!")
         return
     
     if not xp_data:
-        await ctx.send("❌ No one has XP yet!")
+        await ctx.send("âŒ No one has XP yet!")
         return
     sorted_users = sorted(xp_data.items(), key=lambda x: x[1], reverse=True)[:10]
-    message = "🏆 **XP Leaderboard** 🏆\n\n"
+    message = "ðŸ† **XP Leaderboard** ðŸ†\n\n"
     for i, (user_id, xp) in enumerate(sorted_users, 1):
         try:
             user = await bot.fetch_user(user_id)
             message += f"{i}. {user.name}: {xp} XP\n"
         except:
             message += f"{i}. Unknown User: {xp} XP\n"
-    await ctx.send(message)
-
-@bot.command()
-async def top(ctx, limit: int = 10):
-    if ctx.author.id != CHEF_ID:
-        await ctx.send("❌ Only the chef can use custom top rankings!")
-        return
-    
-    if not is_command_enabled('topxp'):
-        await ctx.send("❌ This command is currently disabled!")
-        return
-    
-    if not xp_data:
-        await ctx.send("❌ No one has XP yet!")
-        return
-    
-    if limit <= 0:
-        await ctx.send("❌ Limit must be a positive number!")
-        return
-    
-    if limit > 100:
-        await ctx.send("❌ Maximum limit is 100 users!")
-        return
-    
-    sorted_users = sorted(xp_data.items(), key=lambda x: x[1], reverse=True)[:limit]
-    message = f"🏆 **Top {limit} XP Leaderboard** 🏆\n\n"
-    
-    for i, (user_id, xp) in enumerate(sorted_users, 1):
-        try:
-            user = await bot.fetch_user(user_id)
-            message += f"{i}. {user.name}: {xp} XP\n"
-        except:
-            message += f"{i}. Unknown User: {xp} XP\n"
-    
     await ctx.send(message)
 
 @bot.command()
 async def inventory(ctx, member: Optional[discord.Member] = None):
     if not is_command_enabled('inventory'):
-        await ctx.send("❌ This command is currently disabled!")
+        await ctx.send("âŒ This command is currently disabled!")
         return
     
     target = member if member else ctx.author
@@ -1174,45 +1045,45 @@ async def inventory(ctx, member: Optional[discord.Member] = None):
     if member:
         author_member = ctx.guild.get_member(ctx.author.id) if ctx.guild else None
         if not is_chef_or_admin(ctx.author, author_member):
-            await ctx.send("❌ Only chef and admins can check others' inventory!")
+            await ctx.send("âŒ Only chef and admins can check others' inventory!")
             return
     
     items = inventory_data.get(user_id, [])
     if not items:
-        await ctx.send(f"🎒 {target.mention}'s inventory is empty!")
+        await ctx.send(f"ðŸŽ’ {target.mention}'s inventory is empty!")
         return
     
     from collections import Counter
     item_counts = Counter(items)
     
-    message = f"🎒 **{target.display_name}'s Inventory:**\n\n"
+    message = f"ðŸŽ’ **{target.display_name}'s Inventory:**\n\n"
     for item, count in item_counts.items():
-        message += f"• {item} x{count}\n"
+        message += f"â€¢ {item} x{count}\n"
     
     await ctx.send(message)
 
 @bot.command(aliases=['inventoryreset'])
 async def resetinventory(ctx, member: discord.Member):
     if ctx.author.id != CHEF_ID:
-        await ctx.send("❌ Only the chef can reset inventories!")
+        await ctx.send("âŒ Only the chef can reset inventories!")
         return
     
     user_id = member.id
     if user_id in inventory_data:
         inventory_data[user_id] = []
         save_inventory(inventory_data)
-        await ctx.send(f"✅ {member.mention}'s inventory has been reset!")
+        await ctx.send(f"âœ… {member.mention}'s inventory has been reset!")
     else:
-        await ctx.send(f"❌ {member.mention} has no inventory to reset!")
+        await ctx.send(f"âŒ {member.mention} has no inventory to reset!")
 
 @bot.command()
 async def additem(ctx, member: discord.Member, *, item_name: str):
     if not is_command_enabled('additem'):
-        await ctx.send("❌ This command is currently disabled!")
+        await ctx.send("âŒ This command is currently disabled!")
         return
     
     if ctx.author.id != CHEF_ID:
-        await ctx.send("❌ Only the chef can add items!")
+        await ctx.send("âŒ Only the chef can add items!")
         return
     
     user_id = member.id
@@ -1221,34 +1092,34 @@ async def additem(ctx, member: discord.Member, *, item_name: str):
     
     inventory_data[user_id].append(item_name)
     save_inventory(inventory_data)
-    await ctx.send(f"✅ Added **{item_name}** to {member.mention}'s inventory!")
+    await ctx.send(f"âœ… Added **{item_name}** to {member.mention}'s inventory!")
 
 @bot.command()
 async def removeitem(ctx, member: discord.Member, *, item_name: str):
     if not is_command_enabled('removeitem'):
-        await ctx.send("❌ This command is currently disabled!")
+        await ctx.send("âŒ This command is currently disabled!")
         return
     
     if ctx.author.id != CHEF_ID:
-        await ctx.send("❌ Only the chef can remove items!")
+        await ctx.send("âŒ Only the chef can remove items!")
         return
     
     user_id = member.id
     if user_id not in inventory_data or not inventory_data[user_id]:
-        await ctx.send(f"❌ {member.mention} has no items in inventory!")
+        await ctx.send(f"âŒ {member.mention} has no items in inventory!")
         return
     
     if item_name in inventory_data[user_id]:
         inventory_data[user_id].remove(item_name)
         save_inventory(inventory_data)
-        await ctx.send(f"✅ Removed **{item_name}** from {member.mention}'s inventory!")
+        await ctx.send(f"âœ… Removed **{item_name}** from {member.mention}'s inventory!")
     else:
-        await ctx.send(f"❌ {member.mention} doesn't have **{item_name}** in their inventory!")
+        await ctx.send(f"âŒ {member.mention} doesn't have **{item_name}** in their inventory!")
 
 @bot.command()
 async def daily(ctx):
     if not is_command_enabled('daily'):
-        await ctx.send("❌ This command is currently disabled!")
+        await ctx.send("âŒ This command is currently disabled!")
         return
     
     user_id = ctx.author.id
@@ -1262,7 +1133,7 @@ async def daily(ctx):
             remaining_time = timedelta(hours=24) - time_diff
             hours = int(remaining_time.total_seconds() // 3600)
             minutes = int((remaining_time.total_seconds() % 3600) // 60)
-            await ctx.send(f"⏰ You already claimed your daily XP! Come back in {hours}h {minutes}m")
+            await ctx.send(f"â° You already claimed your daily XP! Come back in {hours}h {minutes}m")
             return
     
     xp_data[user_id] = xp_data.get(user_id, 0) + xp_config["daily_xp_reward"]
@@ -1270,68 +1141,54 @@ async def daily(ctx):
     save_xp(xp_data)
     save_daily_cooldowns(daily_cooldowns)
     
-    await ctx.send(f"🎁 {ctx.author.mention} claimed their daily reward! +{xp_config['daily_xp_reward']} XP! Total XP: {xp_data[user_id]}")
+    await ctx.send(f"ðŸŽ {ctx.author.mention} claimed their daily reward! +{xp_config['daily_xp_reward']} XP! Total XP: {xp_data[user_id]}")
 
 @bot.command(aliases=['configxp'])
 async def setxp(ctx, setting: str = None, value: int = None):
-    global events_state
     if ctx.author.id != CHEF_ID:
-        await ctx.send("❌ Only the chef can modify XP settings!")
+        await ctx.send("âŒ Only the chef can modify XP settings!")
         return
     
     if setting is None or value is None:
         settings_info = (
-            "⚙️ **XP Configuration Settings:**\n\n"
-            f"📝 `xp_per_message`: {xp_config['xp_per_message']} XP per message\n"
-            f"⏰ `max_xp_per_hour`: {xp_config['max_xp_per_hour']} XP max per hour\n"
-            f"🎁 `daily_xp_reward`: {xp_config['daily_xp_reward']} XP for daily reward\n"
-            f"💎 `emoji_xp_amount`: {xp_config['emoji_xp_amount']} XP per emoji reaction\n"
-            f"⏱️ `emoji_xp_cooldown_hours`: {xp_config.get('emoji_xp_cooldown_hours', 1)} hours cooldown for emoji XP\n"
-            f"🎉 `xp_invitation`: {xp_config['xp_invitation']} XP per invitation\n"
-            f"🚀 `xp_boost`: {xp_config['xp_boost']} XP boost value\n"
-            f"🎊 `event_xp_reward`: {events_state['event']['xp_reward']} XP for !event command\n"
-            f"🎁 `gift_xp_reward`: {events_state['gift']['xp_reward']} XP for !gift command\n\n"
-            "📌 **Usage:** `!setxp <setting> <value>`\n"
-            "📌 **Example:** `!setxp emoji_xp_amount 100`\n"
-            "📌 **Example:** `!setxp gift_xp_reward 75`"
+            "âš™ï¸ **XP Configuration Settings:**\n\n"
+            f"ðŸ“ `xp_per_message`: {xp_config['xp_per_message']} XP per message\n"
+            f"â° `max_xp_per_hour`: {xp_config['max_xp_per_hour']} XP max per hour\n"
+            f"ðŸŽ `daily_xp_reward`: {xp_config['daily_xp_reward']} XP for daily reward\n"
+            f"ðŸ’Ž `emoji_xp_amount`: {xp_config['emoji_xp_amount']} XP per emoji reaction\n"
+            f"â±ï¸ `emoji_xp_cooldown_hours`: {xp_config.get('emoji_xp_cooldown_hours', 1)} hours cooldown for emoji XP\n"
+            f"ðŸŽ‰ `xp_invitation`: {xp_config['xp_invitation']} XP per invitation\n"
+            f"ðŸš€ `xp_boost`: {xp_config['xp_boost']} XP boost value\n\n"
+            "ðŸ“Œ **Usage:** `!setxp <setting> <value>`\n"
+            "ðŸ“Œ **Example:** `!setxp emoji_xp_amount 100`"
         )
         await ctx.send(settings_info)
         return
     
-    valid_settings = ['xp_per_message', 'max_xp_per_hour', 'daily_xp_reward', 'emoji_xp_amount', 'xp_invitation', 'xp_boost', 'emoji_xp_cooldown_hours', 'event_xp_reward', 'gift_xp_reward']
+    valid_settings = ['xp_per_message', 'max_xp_per_hour', 'daily_xp_reward', 'emoji_xp_amount', 'xp_invitation', 'xp_boost', 'emoji_xp_cooldown_hours']
     
     if setting not in valid_settings:
-        await ctx.send(f"❌ Invalid setting! Valid settings: {', '.join(valid_settings)}")
+        await ctx.send(f"âŒ Invalid setting! Valid settings: {', '.join(valid_settings)}")
         return
     
     if value < 0:
-        await ctx.send("❌ Value cannot be negative!")
+        await ctx.send("âŒ Value cannot be negative!")
         return
     
-    if setting == 'event_xp_reward':
-        old_value = events_state['event']['xp_reward']
-        events_state['event']['xp_reward'] = value
-        save_events_state(events_state)
-        await ctx.send(f"✅ Updated `{setting}` from {old_value} to {value}! Users will now receive {value} XP with !event")
-    elif setting == 'gift_xp_reward':
-        old_value = events_state['gift']['xp_reward']
-        events_state['gift']['xp_reward'] = value
-        save_events_state(events_state)
-        await ctx.send(f"✅ Updated `{setting}` from {old_value} to {value}! Users will now receive {value} XP with !gift")
-    else:
-        old_value = xp_config[setting]
-        xp_config[setting] = value
-        save_xp_config(xp_config)
-        await ctx.send(f"✅ Updated `{setting}` from {old_value} to {value}!")
+    old_value = xp_config[setting]
+    xp_config[setting] = value
+    save_xp_config(xp_config)
+    
+    await ctx.send(f"âœ… Updated `{setting}` from {old_value} to {value}!")
 
 @bot.command(aliases=['setxpch'])
 async def setxpchannels(ctx, *channels: discord.TextChannel):
     if ctx.author.id != CHEF_ID:
-        await ctx.send("❌ Only the chef can configure XP reaction channels!")
+        await ctx.send("âŒ Only the chef can configure XP reaction channels!")
         return
     
     if not channels:
-        await ctx.send("❌ Please mention at least one channel!\n**Usage:** `!setxpchannels #channel1 #channel2 #channel3`")
+        await ctx.send("âŒ Please mention at least one channel!\n**Usage:** `!setxpchannels #channel1 #channel2 #channel3`")
         return
     
     global xp_reaction_channels
@@ -1339,42 +1196,42 @@ async def setxpchannels(ctx, *channels: discord.TextChannel):
     save_xp_channels(xp_reaction_channels)
     
     channels_list = ", ".join([ch.mention for ch in channels])
-    await ctx.send(f"✅ XP reaction channels configured! Reactions will only work in:\n{channels_list}")
+    await ctx.send(f"âœ… XP reaction channels configured! Reactions will only work in:\n{channels_list}")
 
 @bot.command(aliases=['xpch'])
 async def xpchannels(ctx):
     if not xp_reaction_channels:
-        await ctx.send("⚠️ No XP reaction channels configured. XP reactions work in all channels!\n**Configure with:** `!setxpchannels #channel1 #channel2`")
+        await ctx.send("âš ï¸ No XP reaction channels configured. XP reactions work in all channels!\n**Configure with:** `!setxpchannels #channel1 #channel2`")
         return
     
     channels_text = ""
     for ch_id in xp_reaction_channels:
         channel = bot.get_channel(ch_id)
         if channel:
-            channels_text += f"• {channel.mention}\n"
+            channels_text += f"â€¢ {channel.mention}\n"
         else:
-            channels_text += f"• Unknown Channel (ID: {ch_id})\n"
+            channels_text += f"â€¢ Unknown Channel (ID: {ch_id})\n"
     
-    await ctx.send(f"📋 **XP Reaction Channels:**\n\n{channels_text}\n💡 Only Chef and XP Managers can give XP by reacting in these channels.")
+    await ctx.send(f"ðŸ“‹ **XP Reaction Channels:**\n\n{channels_text}\nðŸ’¡ Only Chef and XP Managers can give XP by reacting in these channels.")
 
 @bot.command(aliases=['xpreact'])
 async def xpreaction(ctx, action: str = None):
     global xp_reaction_enabled, xp_reaction_timer, xp_reaction_timer_task
     
     if ctx.author.id != CHEF_ID:
-        await ctx.send("❌ Only the chef can configure XP reaction settings!")
+        await ctx.send("âŒ Only the chef can configure XP reaction settings!")
         return
     
     if action is None:
-        status = "✅ Enabled" if xp_reaction_enabled else "❌ Disabled"
+        status = "âœ… Enabled" if xp_reaction_enabled else "âŒ Disabled"
         timer_info = ""
         if xp_reaction_timer.get("expires_at"):
             expires = datetime.fromisoformat(xp_reaction_timer["expires_at"])
             now = datetime.now()
             if now < expires:
                 remaining = (expires - now).total_seconds() / 60
-                timer_info = f"\n⏰ Auto-disable in: {remaining:.1f} minutes"
-        await ctx.send(f"⚙️ **XP Reaction Status:** {status}{timer_info}\n\n💡 **Usage:**\n• `!xpreaction enable` - Enable XP reactions permanently\n• `!xpreaction disable` - Disable XP reactions\n• `!xpreaction <minutes>` - Enable for X minutes (e.g., `!xpreaction 15`)")
+                timer_info = f"\nâ° Auto-disable in: {remaining:.1f} minutes"
+        await ctx.send(f"âš™ï¸ **XP Reaction Status:** {status}{timer_info}\n\nðŸ’¡ **Usage:**\nâ€¢ `!xpreaction enable` - Enable XP reactions permanently\nâ€¢ `!xpreaction disable` - Disable XP reactions\nâ€¢ `!xpreaction <minutes>` - Enable for X minutes (e.g., `!xpreaction 15`)")
         return
     
     if action.lower() == 'enable':
@@ -1385,7 +1242,7 @@ async def xpreaction(ctx, action: str = None):
             xp_reaction_timer_task.cancel()
         save_xp_reaction_enabled(xp_reaction_enabled)
         save_xp_reaction_timer(xp_reaction_timer)
-        await ctx.send("✅ XP reactions have been **enabled** permanently! Chef and XP Managers can now give XP via reactions.")
+        await ctx.send("âœ… XP reactions have been **enabled** permanently! Chef and XP Managers can now give XP via reactions.")
     elif action.lower() == 'disable':
         xp_reaction_enabled = False
         xp_reaction_timer["enabled"] = False
@@ -1394,12 +1251,12 @@ async def xpreaction(ctx, action: str = None):
             xp_reaction_timer_task.cancel()
         save_xp_reaction_enabled(xp_reaction_enabled)
         save_xp_reaction_timer(xp_reaction_timer)
-        await ctx.send("❌ XP reactions have been **disabled**! No one can give XP via reactions until re-enabled.")
+        await ctx.send("âŒ XP reactions have been **disabled**! No one can give XP via reactions until re-enabled.")
     else:
         try:
             minutes = int(action)
             if minutes <= 0:
-                await ctx.send("❌ Minutes must be a positive number!")
+                await ctx.send("âŒ Minutes must be a positive number!")
                 return
             xp_reaction_enabled = True
             expires_at = datetime.now() + timedelta(minutes=minutes)
@@ -1408,174 +1265,159 @@ async def xpreaction(ctx, action: str = None):
             save_xp_reaction_enabled(True)
             save_xp_reaction_timer(xp_reaction_timer)
             xp_reaction_timer_task = asyncio.create_task(schedule_xp_reaction_disable(minutes))
-            await ctx.send(f"✅ XP reactions have been **enabled for {minutes} minutes**! They will auto-disable at {expires_at.strftime('%H:%M:%S')}.")
+            await ctx.send(f"âœ… XP reactions have been **enabled for {minutes} minutes**! They will auto-disable at {expires_at.strftime('%H:%M:%S')}.")
         except ValueError:
-            await ctx.send("❌ Invalid action! Use `enable`, `disable`, or a number of minutes (e.g., `!xpreaction 15`).")
+            await ctx.send("âŒ Invalid action! Use `enable`, `disable`, or a number of minutes (e.g., `!xpreaction 15`).")
 
 @bot.command()
 async def enable(ctx, command_name: str):
     if ctx.author.id != CHEF_ID:
-        await ctx.send("❌ Only the chef can enable/disable commands!")
+        await ctx.send("âŒ Only the chef can enable/disable commands!")
         return
     
     toggleable_commands = ['xp', 'addxp', 'shop', 'buy', 'inventory', 'topxp', 'daily', 'additem', 'removeitem']
     
     if command_name not in toggleable_commands:
-        await ctx.send(f"❌ Cannot toggle command `{command_name}`. Available commands: {', '.join(toggleable_commands)}")
+        await ctx.send(f"âŒ Cannot toggle command `{command_name}`. Available commands: {', '.join(toggleable_commands)}")
         return
     
     command_settings[command_name] = True
     save_command_settings(command_settings)
-    await ctx.send(f"✅ Command `!{command_name}` has been enabled!")
+    await ctx.send(f"âœ… Command `!{command_name}` has been enabled!")
 
 @bot.command()
 async def disable(ctx, command_name: str):
     if ctx.author.id != CHEF_ID:
-        await ctx.send("❌ Only the chef can enable/disable commands!")
+        await ctx.send("âŒ Only the chef can enable/disable commands!")
         return
     
     toggleable_commands = ['xp', 'addxp', 'shop', 'buy', 'inventory', 'topxp', 'daily', 'additem', 'removeitem']
     
     if command_name == 'enable' or command_name == 'disable':
-        await ctx.send("❌ Cannot disable the enable/disable commands!")
+        await ctx.send("âŒ Cannot disable the enable/disable commands!")
         return
     
     if command_name not in toggleable_commands:
-        await ctx.send(f"❌ Cannot toggle command `{command_name}`. Available commands: {', '.join(toggleable_commands)}")
+        await ctx.send(f"âŒ Cannot toggle command `{command_name}`. Available commands: {', '.join(toggleable_commands)}")
         return
     
     command_settings[command_name] = False
     save_command_settings(command_settings)
-    await ctx.send(f"✅ Command `!{command_name}` has been disabled!")
+    await ctx.send(f"âœ… Command `!{command_name}` has been disabled!")
 
 @bot.command(name='commands', aliases=['commandlist'])
 async def commands_list(ctx):
     toggleable_commands = ['xp', 'addxp', 'shop', 'buy', 'inventory', 'topxp', 'daily', 'additem', 'removeitem']
     
-    message = "📋 **Command Status:**\n\n"
+    message = "ðŸ“‹ **Command Status:**\n\n"
     for cmd in toggleable_commands:
-        status = "✅ Enabled" if is_command_enabled(cmd) else "❌ Disabled"
+        status = "âœ… Enabled" if is_command_enabled(cmd) else "âŒ Disabled"
         message += f"`!{cmd}` - {status}\n"
     
-    message += "\n💡 **Always Available:**\n"
+    message += "\nðŸ’¡ **Always Available:**\n"
     message += "`!enable` - Enable a command (chef only)\n"
     message += "`!disable` - Disable a command (chef only)\n"
     message += "`!commands` - Show this list\n"
-    message += "`!commandsinfos` - Complete command guide\n"
     message += "`!setxp` - Configure XP values (chef only)\n"
     message += "`!setxpchannels` - Configure XP reaction channels (chef only)\n"
     message += "`!xpchannels` - View XP reaction channels\n"
     message += "`!xpreaction` - Enable/disable XP reactions (chef only)\n"
-    message += "`!event` - Claim/manage events (chef for management)\n"
-    message += "`!gift` - Claim/manage gifts (chef for management)\n"
-    message += "`!top` - Custom leaderboard (chef only)\n"
-    message += "`!backup` - Manual backup to Discord (chef only)\n"
     message += "`!resetxp` - Reset all XP (chef only)\n"
     message += "`!resetinventory` - Reset inventory (chef only)\n"
-    message += "`!addshopitem` - Add shop item (chef only)\n"
-    message += "`!removeshopitem` - Remove shop item (chef only)\n"
     message += "`!alivexp` - Show bot uptime\n"
     
     await ctx.send(message)
 
 @bot.command(aliases=['commandsinfo', 'cmdinfo'])
 async def commandsinfos(ctx):
-    msg1 = """📚 **COMPLETE COMMAND GUIDE** 📚
+    msg1 = """ðŸ“š **COMPLETE COMMAND GUIDE** ðŸ“š
 
-**🎯 XP COMMANDS:**
-• `!xp` - Check your XP balance (Everyone)
+**ðŸŽ¯ XP COMMANDS:**
+â€¢ `!xp` - Check your XP balance (Everyone)
   Example: `!xp` or `!xp @user` (chef/XP managers only)
 
-• `!addxp @user <amount>` - Add/remove XP (Chef only)
-  Example: `!addxp @John 50` → Gives 50 XP
+â€¢ `!addxp @user <amount>` - Add/remove XP (Chef only)
+  Example: `!addxp @John 50` â†’ Gives 50 XP
 
-• `!topxp` - View XP leaderboard (Everyone)
-  Example: `!topxp` → Top 10 users by XP
+â€¢ `!topxp` - View XP leaderboard (Everyone)
+  Example: `!topxp` â†’ Top 10 users by XP
 
-• `!top <number>` - Custom leaderboard size (Chef only)
-  Example: `!top 25` → Top 25 users by XP
+â€¢ `!daily` - Claim daily XP reward (Everyone, 24h cooldown)
+  Example: `!daily` â†’ Get your daily XP"""
 
-• `!daily` - Claim daily XP reward (Everyone, 24h cooldown)
-  Example: `!daily` → Get your daily XP"""
+    msg2 = """**ðŸ›’ SHOP & INVENTORY:**
+â€¢ `!shop` - Browse 404ERROR's Shop (Everyone)
+  Example: `!shop` â†’ View available items
 
-    msg2 = """**🛒 SHOP & INVENTORY:**
-• `!shop` - Browse 404ERROR's Shop (Everyone)
-  Example: `!shop` → View available items
+â€¢ `!buy <number>` - Purchase item (Everyone)
+  Example: `!buy 1` â†’ Buy Discord add (500 XP)
 
-• `!buy <number>` - Purchase item (Everyone)
-  Example: `!buy 1` → Buy Discord add (500 XP)
+â€¢ `!addshopitem <id> <price> <name>` - Add item to shop (Chef only)
+  Example: `!addshopitem 3 2000 ðŸ’€ Death Item`
 
-• `!addshopitem <id> <price> <name>` - Add item to shop (Chef only)
-  Example: `!addshopitem 3 2000 💀 Death Item`
-
-• `!inventory` - View inventory (Everyone)
+â€¢ `!inventory` - View inventory (Everyone)
   Example: `!inventory` or `!inventory @user` (chef/admin)
 
-• `!additem @user <item>` - Give item (Chef only)
+â€¢ `!additem @user <item>` - Give item (Chef only)
   Example: `!additem @John Discord add`
 
-• `!removeitem @user <item>` - Remove item (Chef only)
+â€¢ `!removeitem @user <item>` - Remove item (Chef only)
   Example: `!removeitem @John Brawl Stars add`"""
 
-    msg3 = """**⚙️ CONFIGURATION (Chef Only):**
-• `!setxp <setting> <value>` - Configure XP values
-  Settings: xp_per_message, max_xp_per_hour, daily_xp_reward, emoji_xp_amount, emoji_xp_cooldown_hours, xp_invitation, xp_boost, event_xp_reward, gift_xp_reward
+    msg3 = """**âš™ï¸ CONFIGURATION (Chef Only):**
+â€¢ `!setxp <setting> <value>` - Configure XP values
+  Settings: xp_per_message, max_xp_per_hour, daily_xp_reward, emoji_xp_amount, emoji_xp_cooldown_hours, xp_invitation, xp_boost
   Example: `!setxp emoji_xp_amount 100`
-  Example: `!setxp gift_xp_reward 75`
 
-• `!setxpchannels #ch1 #ch2` - Set XP reaction channels
+â€¢ `!setxpchannels #ch1 #ch2` - Set XP reaction channels
   Example: `!setxpchannels #general`
 
-• `!xpchannels` - View XP reaction channels (Everyone)
+â€¢ `!xpchannels` - View XP reaction channels (Everyone)
 
-• `!xpreaction <action>` or `!xpreact` - Manage XP reactions (Chef only)
-  `!xpreaction enable` → Enable permanently
-  `!xpreaction disable` → Disable
-  `!xpreaction 15` → Enable for 15 minutes
+â€¢ `!xpreaction <action>` or `!xpreact` - Manage XP reactions (Chef only)
+  `!xpreaction enable` â†’ Enable permanently
+  `!xpreaction disable` â†’ Disable
+  `!xpreaction 15` â†’ Enable for 15 minutes
 
-• `!enable <cmd>` - Enable command
+â€¢ `!enable <cmd>` - Enable command
   Example: `!enable shop`
 
-• `!disable <cmd>` - Disable command
+â€¢ `!disable <cmd>` - Disable command
   Example: `!disable daily`"""
 
-    msg4 = """**🎉 EVENTS & GIFTS:**
-• `!event` - Claim event reward (Everyone when active)
-  Example: `!event` → Get XP (24h cooldown, configurable with !setxp event_xp_reward)
+    msg4 = """**ðŸŽ‰ EVENTS & GIFTS:**
+â€¢ `!event` - Claim event reward (Everyone when active)
+  Example: `!event` â†’ Get 100 XP (24h cooldown)
 
-• `!event <action>` - Manage events (Chef only)
-  `!event enable` → Enable permanently
-  `!event disable` → Disable
-  `!event 5` → Enable for 5 minutes
+â€¢ `!event <action>` - Manage events (Chef only)
+  `!event enable` â†’ Enable permanently
+  `!event disable` â†’ Disable
+  `!event 5` â†’ Enable for 5 minutes
 
-• `!gift` - Claim gift reward (Everyone when active)
-  Example: `!gift` → Get XP (12h cooldown, configurable with !setxp gift_xp_reward)
+â€¢ `!gift` - Claim gift reward (Everyone when active)
+  Example: `!gift` â†’ Get 50 XP (12h cooldown)
 
-• `!gift <action>` - Manage gifts (Chef only)
-  `!gift enable` → Enable permanently
-  `!gift disable` → Disable
-  `!gift 10` → Enable for 10 minutes"""
+â€¢ `!gift <action>` - Manage gifts (Chef only)
+  `!gift enable` â†’ Enable permanently
+  `!gift disable` â†’ Disable
+  `!gift 10` â†’ Enable for 10 minutes"""
 
-    msg5 = """**🔄 RESET & BACKUP (Chef Only):**
-• `!resetxp` - Reset ALL XP (requires ✅ confirmation)
-• `!resetinventory @user` - Clear inventory
+    msg5 = """**ðŸ”„ RESET COMMANDS (Chef Only):**
+â€¢ `!resetxp` - Reset ALL XP (requires âœ… confirmation)
+â€¢ `!resetinventory @user` - Clear inventory
   Example: `!resetinventory @John`
-• `!backup` - Manual backup to Discord
-  Example: `!backup` → Saves all data files
 
-**📊 INFO COMMANDS:**
-• `!commands` - View command status (Everyone)
-• `!commandsinfos` - This help guide (Everyone)
-• `!alivexp` - Check bot uptime (Everyone)
+**ðŸ“Š INFO COMMANDS:**
+â€¢ `!commands` - View command status (Everyone)
+â€¢ `!commandsinfos` - This help guide (Everyone)
+â€¢ `!alivexp` - Check bot uptime (Everyone)
 
-**💎 SPECIAL FEATURES:**
-✨ Earn XP by sending messages in configured channels
-✨ Get XP when someone joins via your invite
-✨ Chef/XP Managers give XP by reacting with XP emoji
-✨ **Get XP when you boost the Discord server** (configurable with !setxp xp_boost)
-✨ Dynamic shop system with custom items
-✨ Temporary activation system for XP reactions & events
-✨ Automatic Discord backup every 15 minutes"""
+**ðŸ’Ž SPECIAL FEATURES:**
+âœ¨ Earn XP by sending messages in configured channels
+âœ¨ Get XP when someone joins via your invite
+âœ¨ Chef/XP Managers give XP by reacting with XP emoji
+âœ¨ Dynamic shop system with custom items
+âœ¨ Temporary activation system for XP reactions & events"""
 
     await ctx.send(msg1)
     await ctx.send(msg2)
@@ -1586,7 +1428,7 @@ async def commandsinfos(ctx):
 @bot.command()
 async def alivexp(ctx):
     if bot_start_time is None:
-        await ctx.send("⏰ Bot uptime information is not available yet.")
+        await ctx.send("â° Bot uptime information is not available yet.")
         return
     
     uptime = datetime.now() - bot_start_time
@@ -1594,11 +1436,11 @@ async def alivexp(ctx):
     hours, remainder = divmod(uptime.seconds, 3600)
     minutes, seconds = divmod(remainder, 60)
     
-    uptime_message = f"🤖 **Bot Uptime:**\n"
+    uptime_message = f"ðŸ¤– **Bot Uptime:**\n"
     if days > 0:
-        uptime_message += f"📅 {days} day{'s' if days > 1 else ''}, "
-    uptime_message += f"⏰ {hours}h {minutes}m {seconds}s\n"
-    uptime_message += f"🚀 Started at: {bot_start_time.strftime('%Y-%m-%d %H:%M:%S')}"
+        uptime_message += f"ðŸ“… {days} day{'s' if days > 1 else ''}, "
+    uptime_message += f"â° {hours}h {minutes}m {seconds}s\n"
+    uptime_message += f"ðŸš€ Started at: {bot_start_time.strftime('%Y-%m-%d %H:%M:%S')}"
     
     await ctx.send(uptime_message)
 
@@ -1623,6 +1465,6 @@ if __name__ == "__main__":
     keep_alive()
     token = os.environ.get("TOKEN")
     if not token:
-        print("❌ Error: Missing TOKEN environment variable!")
+        print("âŒ Error: Missing TOKEN environment variable!")
         exit(1)
     bot.run(token)
