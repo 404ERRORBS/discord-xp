@@ -1,0 +1,9 @@
+{
+  "xp_per_message": 1,
+  "max_xp_per_hour": 5,
+  "daily_xp_reward": 20,
+  "emoji_xp_amount": 50,
+  "xp_invitation": 25,
+  "xp_boost": 500,
+  "emoji_xp_cooldown_hours": 1
+}

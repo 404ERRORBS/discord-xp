@@ -1,0 +1,14 @@
+{
+  "event": {
+    "enabled": false,
+    "expires_at": null,
+    "xp_reward": 100,
+    "cooldown_hours": 24
+  },
+  "gift": {
+    "enabled": true,
+    "expires_at": "2025-10-28T15:50:10.111742",
+    "xp_reward": 50,
+    "cooldown_hours": 12
+  }
+}
